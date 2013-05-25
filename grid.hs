@@ -1,3 +1,7 @@
+module Grid  
+( gridTriStripIndices  
+  ) where 
+
 -- Zip the lists a and b, concatenating into a single list
 flatZip a b = concat $ zipWith (\x y -> [x,y]) a b
 
