@@ -1,6 +1,9 @@
-module Grid  
-( gridTriStripIndices  
-  ) where 
+module Grid
+( gridTriStripIndices
+  ) where
+
+import Graphics.GPipe
+import Control.Applicative
 
 -- Zip the lists a and b, concatenating into a single list
 flatZip a b = concat $ zipWith (\x y -> [x,y]) a b
@@ -15,5 +18,6 @@ gridRowTriStripIndices w =
     ++ flatZip [3*w-1,3*w-2..2*w+1] [2*w-2,2*w-3..w]
     ++ [2*w,2*w,2*w] -- fix winding order again
 
-gridTriStripIndices w h = gridRowTriStripIndices w
+gridTriStripIndices w h =
+  concat [ ((+x*2*w) <$> gridRowTriStripIndices w) | x<-[0..h] ]
 
