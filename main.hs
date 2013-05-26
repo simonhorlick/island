@@ -6,6 +6,7 @@ import Graphics.UI.GLUT( Window, mainLoop, idleCallback, getArgsAndInitialize, (
 import Grid
 
 import qualified Data.Vec as Vec
+import Data.Vec.LinAlg -- projection
 
 main :: IO ()
 main = do
@@ -48,9 +49,13 @@ procTriangle size = fmap (projTriangle size) gridStream
 
 -- Compute the projection matrix for the triangle
 projTriangle :: Vec2 Int -> Vec3 (Vertex Float) -> (Vec4 (Vertex Float), Vec3 (Vertex Float))
-projTriangle size pos = (orthoProj `multmv` homPos, toGPU $ 0:.1:.0:.())
+projTriangle size pos = (modelViewProjection `multmv` homPos, colour)
   where homPos = homPoint pos :: Vec4 (Vertex Float)  
-        orthoProj = toGPU $ orthogonal (-10) 10  (2:.2:.())
+        colour = toGPU $ 0:.1:.0:.()
+        modelViewProjection = model `multmm` (view `multmm` proj)
+        proj = toGPU (perspective 1 20 (pi/3) (fromIntegral 1280 / fromIntegral 720))
+        view = identity
+        model = identity
 
 gridVertices = 
   [
