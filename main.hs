@@ -6,7 +6,7 @@ import Graphics.UI.GLUT( Window, mainLoop, idleCallback, getArgsAndInitialize, (
 import Grid
 
 import qualified Data.Vec as Vec
-import Data.Vec.LinAlg -- projection
+import qualified Data.Vec.LinAlg as LinAlg -- projection
 
 main :: IO ()
 main = do
@@ -39,45 +39,43 @@ initWindow win = idleCallback $= Nothing
 -- This implements the fragment shader
  
 rasteriseTriangle :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
-rasteriseTriangle size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndBack $ procTriangle size 
+rasteriseTriangle size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndBack $ cube_proc_scene
 
 
 -- This implements the vertex shader
 
-procTriangle :: Vec2 Int -> PrimitiveStream Triangle (Vec4 (Vertex Float), Vec3 (Vertex Float))
-procTriangle size = fmap (projTriangle size) gridStream 
+cube_proc_scene :: PrimitiveStream Triangle (Vec4 (Vertex Float), Vec3 (Vertex Float))
+cube_proc_scene = fmap (cube_transform) $ gridStream
 
--- Compute the projection matrix for the triangle
-projTriangle :: Vec2 Int -> Vec3 (Vertex Float) -> (Vec4 (Vertex Float), Vec3 (Vertex Float))
-projTriangle size pos = (modelViewProjection `multmv` homPos, colour)
-  where homPos = homPoint pos :: Vec4 (Vertex Float)  
-        colour = toGPU $ 0:.1:.0:.()
-        modelViewProjection = model `multmm` (view `multmm` proj)
-        proj = toGPU (perspective 1 20 (pi/3) (fromIntegral 1280 / fromIntegral 720))
-        view = identity
-        model = identity
+cube_transform :: (Vec3 (Vertex Float), Vec3 (Vertex Float)) -> (Vec4 (Vertex Float), Vec3 (Vertex Float))
+cube_transform (pos,norm) = (transformedPos,norm)
+    where
+         viewMat = (translation (0:.0:.(-2):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/4))
+         projMat = perspective 1 100 (pi/3) (1280.0 / 720.0)
+         viewProjMat = projMat `multmm` viewMat
+         transformedPos = toGPU viewProjMat `multmv` (homPoint pos :: Vec4 (Vertex Float))
 
-gridVertices = 
-  [
-    0.0:.0.0:.0.0:.(),
-    0.1:.0.0:.0.0:.(),
-    0.2:.0.0:.0.0:.(),
-    0.3:.0.0:.0.0:.(),
-    0.0:.0.1:.0.0:.(),
-    0.1:.0.1:.0.0:.(),
-    0.2:.0.1:.0.0:.(),
-    0.3:.0.1:.0.0:.(),
-    0.0:.0.2:.0.0:.(),
-    0.1:.0.2:.0.0:.(),
-    0.2:.0.2:.0.0:.(),
-    0.3:.0.2:.0.0:.(),
-    0.0:.0.3:.0.0:.(),
-    0.1:.0.3:.0.0:.(),
-    0.2:.0.3:.0.0:.(),
-    0.3:.0.3:.0.0:.()
-  ]
-
+-- TODO: Why does zip gridVertices gridNormals fail type check, but the inline vertices below pass fine?
 -- Create a triangle stream describing a tesselated grid
-gridStream :: PrimitiveStream Triangle (Vec3 (Vertex Float))
-gridStream = toIndexedGPUStream TriangleStrip gridVertices (gridTriStripIndices 4 4)
+gridStream :: PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float))
+gridStream = toIndexedGPUStream TriangleStrip vertices indices
+  where
+    vertices = [
+      (0.0:.0.0:.0.0:.(),0.0:.1.0:.0.0:.()),
+      (0.1:.0.0:.0.0:.(),0.0:.1.0:.0.0:.()),
+      (0.2:.0.0:.0.0:.(),0.0:.1.0:.0.0:.()),
+      (0.3:.0.0:.0.0:.(),0.0:.1.0:.0.0:.()),
+      (0.0:.0.0:.0.1:.(),0.0:.1.0:.0.0:.()),
+      (0.1:.0.0:.0.1:.(),0.0:.1.0:.0.0:.()),
+      (0.2:.0.0:.0.1:.(),0.0:.1.0:.0.0:.()),
+      (0.3:.0.0:.0.1:.(),0.0:.1.0:.0.0:.()),
+      (0.0:.0.0:.0.2:.(),0.0:.1.0:.0.0:.()),
+      (0.1:.0.0:.0.2:.(),0.0:.1.0:.0.0:.()),
+      (0.2:.0.0:.0.2:.(),0.0:.1.0:.0.0:.()),
+      (0.3:.0.0:.0.2:.(),0.0:.1.0:.0.0:.()),
+      (0.0:.0.0:.0.3:.(),0.0:.1.0:.0.0:.()),
+      (0.1:.0.0:.0.3:.(),0.0:.1.0:.0.0:.()),
+      (0.2:.0.0:.0.3:.(),0.0:.1.0:.0.0:.()),
+      (0.3:.0.0:.0.3:.(),0.0:.1.0:.0.0:.()) ]
+    indices = gridTriStripIndices 4 4
 
