@@ -4,6 +4,7 @@ import Graphics.GPipe
 import Graphics.UI.GLUT( Window, mainLoop, idleCallback, postRedisplay, getArgsAndInitialize, ($=) )
 
 import Grid
+import ShaderTypes
 
 import qualified Data.Vec as Vec
 import qualified Data.Vec.LinAlg as LinAlg -- projection
@@ -34,11 +35,6 @@ render size = do
   where
     draw  = paintColor NoBlending (RGB $ Vec.vec True)  
     clear = newFrameBufferColor (RGB (Vec.fromList [0.1,0.3,0.6]))
-
--- Shader vertex types
-type Position = Vec3 (Vertex Float)
-type Position' = Vec4 (Vertex Float) -- homogenised position
-type Normal = Vec3 (Vertex Float)
 
 -- Default fragment shader
 rasterise :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
