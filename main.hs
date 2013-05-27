@@ -35,6 +35,10 @@ renderFrame size = do
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Nothing
 
+-- Shader vertex types
+type Position = Vec3 (Vertex Float)
+type Position' = Vec4 (Vertex Float) -- homogenised position
+type Normal = Vec3 (Vertex Float)
 
 -- This implements the fragment shader
  
@@ -44,10 +48,10 @@ rasteriseTriangle size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndB
 
 -- This implements the vertex shader
 
-cube_proc_scene :: PrimitiveStream Triangle (Vec4 (Vertex Float), Vec3 (Vertex Float))
+cube_proc_scene :: PrimitiveStream Triangle (Position', Normal)
 cube_proc_scene = fmap (cube_transform) $ gridStream
 
-cube_transform :: (Vec3 (Vertex Float), Vec3 (Vertex Float)) -> (Vec4 (Vertex Float), Vec3 (Vertex Float))
+cube_transform :: (Position, Normal) -> (Position', Normal)
 cube_transform (pos,norm) = (transformedPos,norm)
     where
          viewMat = (translation (0:.0:.(-2):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/4))
@@ -57,7 +61,7 @@ cube_transform (pos,norm) = (transformedPos,norm)
 
 -- TODO: Why does zip gridVertices gridNormals fail type check, but the inline vertices below pass fine?
 -- Create a triangle stream describing a tesselated grid
-gridStream :: PrimitiveStream Triangle (Vec3 (Vertex Float), Vec3 (Vertex Float))
+gridStream :: PrimitiveStream Triangle (Position, Normal)
 gridStream = toIndexedGPUStream TriangleStrip vertices indices
   where
     vertices = [
