@@ -1,7 +1,7 @@
 module Main where
 
 import Graphics.GPipe
-import Graphics.UI.GLUT( Window, mainLoop, idleCallback, getArgsAndInitialize, ($=) )
+import Graphics.UI.GLUT( Window, mainLoop, idleCallback, postRedisplay, getArgsAndInitialize, ($=) )
 
 import Grid
 
@@ -25,7 +25,7 @@ main = do
 
 -- Set up GLUT callbacks
 initWindow :: Window -> IO ()
-initWindow win = idleCallback $= Nothing
+initWindow win = idleCallback $= Just (postRedisplay (Just win))
 
 -- Called by GLUT each frame
 render :: Vec2 Int -> IO (FrameBuffer RGBFormat () ())
