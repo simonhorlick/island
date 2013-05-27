@@ -17,23 +17,23 @@ main = do
   newWindow "Island"
     (0:.0:.())
     (1280:.720:.())
-    renderFrame
+    render
     initWindow
 
   -- Hand off execution to GLUT
   mainLoop
 
--- Called by GLUT each frame
-renderFrame :: Vec2 Int -> IO (FrameBuffer RGBFormat () ())
-renderFrame size = do
-  return $ draw (rasteriseTriangle size) clear
-  where
-    draw  = paintColor NoBlending (RGB $ Vec.vec True)  
-    clear = newFrameBufferColor (RGB (Vec.fromList [0.1,0.3,0.6]))
-
 -- Set up GLUT callbacks
 initWindow :: Window -> IO ()
 initWindow win = idleCallback $= Nothing
+
+-- Called by GLUT each frame
+render :: Vec2 Int -> IO (FrameBuffer RGBFormat () ())
+render size = do
+  return $ draw (rasterise size) clear
+  where
+    draw  = paintColor NoBlending (RGB $ Vec.vec True)  
+    clear = newFrameBufferColor (RGB (Vec.fromList [0.1,0.3,0.6]))
 
 -- Shader vertex types
 type Position = Vec3 (Vertex Float)
@@ -42,17 +42,17 @@ type Normal = Vec3 (Vertex Float)
 
 -- This implements the fragment shader
  
-rasteriseTriangle :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
-rasteriseTriangle size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndBack $ cube_proc_scene
+rasterise :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
+rasterise size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndBack $ transformVertices
 
 
 -- This implements the vertex shader
 
-cube_proc_scene :: PrimitiveStream Triangle (Position', Normal)
-cube_proc_scene = fmap (cube_transform) $ gridStream
+transformVertices :: PrimitiveStream Triangle (Position', Normal)
+transformVertices = fmap (transformVertex) $ gridStream
 
-cube_transform :: (Position, Normal) -> (Position', Normal)
-cube_transform (pos,norm) = (transformedPos,norm)
+transformVertex :: (Position, Normal) -> (Position', Normal)
+transformVertex (pos,norm) = (transformedPos,norm)
     where
          viewMat = (translation (0:.0:.(-2):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/4))
          projMat = perspective 1 100 (pi/3) (1280.0 / 720.0)
