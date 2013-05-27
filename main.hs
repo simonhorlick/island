@@ -40,17 +40,15 @@ type Position = Vec3 (Vertex Float)
 type Position' = Vec4 (Vertex Float) -- homogenised position
 type Normal = Vec3 (Vertex Float)
 
--- This implements the fragment shader
- 
+-- Default fragment shader
 rasterise :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
-rasterise size = fmap (\(front,color) -> RGB color) $ rasterizeFrontAndBack $ transformVertices
+rasterise size = fmap (\(front, color) -> RGB color) $ rasterizeFrontAndBack $ transformVertices
 
-
--- This implements the vertex shader
-
+-- Apply model view projection matrices to each vertex in the stream
 transformVertices :: PrimitiveStream Triangle (Position', Normal)
 transformVertices = fmap (transformVertex) $ gridStream
 
+-- Default hardware transform
 transformVertex :: (Position, Normal) -> (Position', Normal)
 transformVertex (pos,norm) = (transformedPos,norm)
     where
@@ -59,7 +57,6 @@ transformVertex (pos,norm) = (transformedPos,norm)
          viewProjMat = projMat `multmm` viewMat
          transformedPos = toGPU viewProjMat `multmv` (homPoint pos :: Vec4 (Vertex Float))
 
--- TODO: Why does zip gridVertices gridNormals fail type check, but the inline vertices below pass fine?
 -- Create a triangle stream describing a tesselated grid
 gridStream :: PrimitiveStream Triangle (Position, Normal)
 gridStream = toIndexedGPUStream TriangleStrip vertices indices
