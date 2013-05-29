@@ -38,7 +38,16 @@ render size = do
 
 -- Default fragment shader
 rasterise :: Vec2 Int -> FragmentStream (Color RGBFormat (Fragment Float))
-rasterise size = fmap (\(front, color) -> RGB color) $ rasterizeFrontAndBack (transformVertices size)
+rasterise size = fmap (fixedLight) $ rasterizeFront transformedVertices
+  where transformedVertices = transformVertices size
+
+-- TODO: Vary light intensity over distance
+fixedLight :: Vec3 (Fragment Float) -> Color RGBFormat (Fragment Float)
+fixedLight (norm) = color
+  where
+    li = norm `dot` toGPU lightDirection
+    color = RGB (li:.li:.li:.())
+    lightDirection = (0.2:.0.5:.0.3:.())
 
 -- Apply model view projection matrices to each vertex in the stream
 transformVertices :: Vec2 Int -> PrimitiveStream Triangle (Position', Normal)
