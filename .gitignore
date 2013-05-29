@@ -1,0 +1,11 @@
+dist
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+.virthualenv
+island
+grid_unittest
+*.jpg
+*.png
