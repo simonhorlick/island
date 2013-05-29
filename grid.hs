@@ -1,9 +1,12 @@
 module Grid
 ( gridTriStripIndices
+, gridStream
   ) where
 
 import Graphics.GPipe
 import Control.Applicative
+
+import ShaderTypes
 
 -- Zip the lists a and b, concatenating into a single list
 flatZip a b = concat $ zipWith (\x y -> [x,y]) a b
@@ -20,4 +23,16 @@ gridRowTriStripIndices w =
 
 gridTriStripIndices w h =
   concat [ ((+x*2*w) <$> gridRowTriStripIndices w) | x<-[0..h] ]
+
+height :: Float -> Float -> Float
+height x z = sin (pi*z)
+
+-- Create a triangle stream describing a tesselated grid
+gridStream :: PrimitiveStream Triangle (Position, Normal)
+gridStream = toIndexedGPUStream TriangleStrip vertices indices
+  where
+    vertices = [ (x:.(height x z):.z:.(),0.0:.1.0:.0.0:.()) | x<-[0.0,(1.0/(fromIntegral w))..1.0], z<-[0.0,(1.0/(fromIntegral h))..1.0] ]
+    indices = gridTriStripIndices w h
+    w = h 
+    h = 8
 
