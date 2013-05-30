@@ -29,8 +29,12 @@ row :: Int -> Int -> [Int]
 row x w = if even x then forwardRow w
                     else backwardRow w
 
+-- Round down to nearest even number
+round2 :: Int -> Int
+round2 x = (x `quot` 2) * 2
+
 gridTriStripIndices w h =
-  concat [ ((+(x `quot` 2)*2*w) <$> row x w) | x<-[0..h-1] ]
+  concat [ ((+(round2 x)*(w+1)) <$> row x (w+1)) | x<-[0..h-1] ]
 
 height :: Float -> Float -> Float
 height x z = sin (pi*z)
@@ -43,6 +47,6 @@ gridStream = toIndexedGPUStream TriangleStrip vertices indices
       x<-[0.0,(1.0/(fromIntegral w))..1.0],
       z<-[0.0,(1.0/(fromIntegral h))..1.0] ]
     indices = gridTriStripIndices w h
-    w = h 
-    h = 8
+    w = 4 -- number of squares width
+    h = 2 -- number of squares height
 
