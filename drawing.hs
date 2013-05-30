@@ -22,20 +22,20 @@ rasterise size = fmap (fixedLight) $ rasterizeFront transformedVertices
   where transformedVertices = transformVertices size
 
 -- TODO: Vary light intensity over distance
-fixedLight :: Vec3 (Fragment Float) -> Color RGBFormat (Fragment Float)
-fixedLight (norm) = color
+fixedLight :: (FragmentNormal, FragmentTexCoord) -> Color RGBFormat (Fragment Float)
+fixedLight (norm, texcoord)  = color
   where
     li = norm `dot` toGPU lightDirection
     color = RGB (li:.li:.li:.())
     lightDirection = (0.2:.0.5:.0.3:.())
 
 -- Apply model view projection matrices to each vertex in the stream
-transformVertices :: Vec2 Int -> PrimitiveStream Triangle (Position', Normal)
+transformVertices :: Vec2 Int -> PrimitiveStream Triangle (Position', (Normal, TexCoord))
 transformVertices size = fmap (transformVertex size) $ gridStream
 
 -- Default hardware transform
-transformVertex :: Vec2 Int -> (Position, Normal) -> (Position', Normal)
-transformVertex (width:.height:.()) (pos,norm) = (transformedPos,norm)
+transformVertex :: Vec2 Int -> (Position, (Normal, TexCoord)) -> (Position', (Normal, TexCoord))
+transformVertex (width:.height:.()) (pos, (norm, texcoord)) = (transformedPos, (norm, texcoord))
     where
          viewMat = (translation (0:.0:.(-2):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/4))
          projMat = perspective 1 100 (pi/3) aspectRatio

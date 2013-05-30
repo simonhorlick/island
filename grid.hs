@@ -28,10 +28,12 @@ height :: Float -> Float -> Float
 height x z = sin (pi*z)
 
 -- Create a triangle stream describing a tesselated grid
-gridStream :: PrimitiveStream Triangle (Position, Normal)
+gridStream :: PrimitiveStream Triangle (Position, (Normal, TexCoord))
 gridStream = toIndexedGPUStream TriangleStrip vertices indices
   where
-    vertices = [ (x:.(height x z):.z:.(),0.0:.1.0:.0.0:.()) | x<-[0.0,(1.0/(fromIntegral w))..1.0], z<-[0.0,(1.0/(fromIntegral h))..1.0] ]
+    vertices = [ (x:.(height x z):.z:.(), (0.0:.1.0:.0.0:.(), x:.z:.())) |
+      x<-[0.0,(1.0/(fromIntegral w))..1.0],
+      z<-[0.0,(1.0/(fromIntegral h))..1.0] ]
     indices = gridTriStripIndices w h
     w = h 
     h = 8
