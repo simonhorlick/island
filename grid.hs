@@ -37,7 +37,7 @@ gridTriStripIndices w h =
   concat [ ((+(round2 x)*(w+1)) <$> row x (w+1)) | x<-[0..h-1] ]
 
 height :: Float -> Float -> Float
-height x z = sin (pi*z)
+height x z = sin(x/10) + cos(z/10)
 
 -- Create a triangle stream describing a tesselated grid
 gridStream :: PrimitiveStream Triangle (Position, (Normal, TexCoord))
@@ -47,6 +47,6 @@ gridStream = toIndexedGPUStream TriangleStrip vertices indices
       z<-[0.0..(fromIntegral h)],
       x<-[0.0..(fromIntegral w)] ]
     indices = gridTriStripIndices w h
-    w = 4 -- number of squares width
-    h = 2 -- number of squares height
+    w = 128 -- number of squares width
+    h = 128 -- number of squares height
 

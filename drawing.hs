@@ -38,7 +38,7 @@ transformVertices size = fmap (transformVertex size) $ gridStream
 transformVertex :: Vec2 Int -> (Position, (Normal, TexCoord)) -> (Position', (Normal, TexCoord))
 transformVertex (width:.height:.()) (pos, (norm, texcoord)) = (transformedPos, (norm, texcoord))
     where
-         viewMat = (translation (0:.0:.(-2):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/4))
+         viewMat = (translation ((-64):.0:.(-20):.())) `multmm` (rotationX (pi/6)) `multmm` (rotationY (pi/2))
          projMat = perspective 1 100 (pi/3) aspectRatio
          aspectRatio = (fromIntegral width) / (fromIntegral height)
          viewProjMat = projMat `multmm` viewMat
