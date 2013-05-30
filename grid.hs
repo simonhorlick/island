@@ -44,8 +44,8 @@ gridStream :: PrimitiveStream Triangle (Position, (Normal, TexCoord))
 gridStream = toIndexedGPUStream TriangleStrip vertices indices
   where
     vertices = [ (x:.(height x z):.z:.(), (0.0:.1.0:.0.0:.(), x:.z:.())) |
-      x<-[0.0,(1.0/(fromIntegral w))..1.0],
-      z<-[0.0,(1.0/(fromIntegral h))..1.0] ]
+      z<-[0.0..(fromIntegral h)],
+      x<-[0.0..(fromIntegral w)] ]
     indices = gridTriStripIndices w h
     w = 4 -- number of squares width
     h = 2 -- number of squares height
