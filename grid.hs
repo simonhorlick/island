@@ -3,7 +3,7 @@ module Grid
 , gridStream
   ) where
 
-import Graphics.GPipe
+import Graphics.GPipe hiding (row)
 import Control.Applicative
 
 import ShaderTypes
@@ -15,14 +15,22 @@ flatZip a b = concat $ zipWith (\x y -> [x,y]) a b
 -- order v00 v10 v01 v11. The indices into the vertex buffer then become 0, w,
 -- 1, (w+1), 2, (w+2), ..., (w-1), (2*w-1). At the end of a row we must draw
 -- some degenerate triangles to keep the winding order consistent.
-gridRowTriStripIndices w =
-    flatZip [0..w-1] [w..(2*w-1)]
-    ++ [2*w-1,2*w-1] -- fix winding order
-    ++ flatZip [3*w-1,3*w-2..2*w+1] [2*w-2,2*w-3..w]
-    ++ [2*w,2*w,2*w] -- fix winding order again
+forwardRow :: Int -> [Int]
+forwardRow w =
+  flatZip [0..w-1] [w..(2*w-1)]
+  ++ [2*w-1,2*w-1] -- fix winding order
+
+backwardRow :: Int -> [Int]
+backwardRow w = 
+  flatZip [3*w-1,3*w-2..2*w+1] [2*w-2,2*w-3..w]
+  ++ [2*w,2*w] -- fix winding order again
+
+row :: Int -> Int -> [Int]
+row x w = if even x then forwardRow w
+                    else backwardRow w
 
 gridTriStripIndices w h =
-  concat [ ((+x*2*w) <$> gridRowTriStripIndices w) | x<-[0..h] ]
+  concat [ ((+(x `quot` 2)*2*w) <$> row x w) | x<-[0..h-1] ]
 
 height :: Float -> Float -> Float
 height x z = sin (pi*z)
